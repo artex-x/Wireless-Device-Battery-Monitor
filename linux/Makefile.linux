@@ -24,7 +24,8 @@ DRIVERS := \
     src/drivers/corsair.cpp \
     src/drivers/hyperx.cpp \
     src/drivers/playstation.cpp \
-    src/drivers/coolermaster.cpp
+    src/drivers/coolermaster.cpp \
+    src/drivers/finalmouse.cpp
 
 SRC := src/linux/hid_linux.cpp src/linux/devices_linux.cpp src/linux/main_linux.cpp $(DRIVERS)
 OBJ := $(patsubst src/%.cpp,build/linux/%.o,$(SRC))
