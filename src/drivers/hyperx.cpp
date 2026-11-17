@@ -1,5 +1,6 @@
-// HyperX wireless headsets (HP VID 03F0, older Kingston VID 0951).
-// Protocols: Cloud III Wireless verified on hardware (03F0:0C9D) and github.com/Medprj/HyperXWM;
+// HyperX wireless headsets and Pulsefire Haste 2 mice (HP VID 03F0, older Kingston VID 0951).
+// Protocols: Pulsefire Haste 2 Core Wireless verified on hardware (03F0:0AB5), see HasteWireless;
+// Cloud III Wireless verified on hardware (03F0:0C9D) and github.com/Medprj/HyperXWM;
 // Cloud III S from github.com/LennardKittner/HyperHeadset; Cloud Stinger Core from
 // github.com/davidsantanaalves/HyperBatteryMonitor; the others follow github.com/Sapd/HeadsetControl.
 #include "drivers.h"
@@ -118,7 +119,8 @@ bool CloudAlpha2(const HidColl& c, DeviceStatus& s) {
 
 // Pulsefire Haste 2 (Core) Wireless: NGENUITY's read-only battery query, the same 52 01 / 50 02 pair as
 // Cloud Alpha 2, on the dongle's vendor collection (interface 2). 64-byte reports.
-// From github.com/PMarinov1994/ngenuity-linux-cli (Haste 2 Wireless); the Core Wireless (03F0:0AB5) is unverified.
+// From github.com/PMarinov1994/ngenuity-linux-cli (Haste 2 Wireless). Verified on a Core Wireless (03F0:0AB5);
+// the Haste 2 Wireless dongles (0D97, 0F98) are untested.
 bool HasteWireless(const HidColl& c, DeviceStatus& s) {
     HidDev d;
     if (!d.Open(c)) return false;
