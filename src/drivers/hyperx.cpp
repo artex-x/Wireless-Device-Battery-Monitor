@@ -132,10 +132,23 @@ bool HasteWireless(const HidColl& c, DeviceStatus& s) {
     bool linked = !linkKnown || r[2] != 0;
     bool gotBattery = linked && q(0x50, 0x02, r) && r[2] <= 100;
     if (!linkKnown && !gotBattery) return false;
+
+    // For about 5 s after it powers on the mouse reports 40% instead of its real level (measured 2026-11-17 on
+    // a Core Wireless: 40% for 2-5 s, then 70%). A reading inside that settle window is not trusted. The first
+    // poll after the app starts assumes the mouse has been on for a while.
+    static ULONGLONG linkUpAt = 0;
+    static bool polled = false;
+    const ULONGLONG kSettleMs = 6000;
+    ULONGLONG now = GetTickCount64();
+    if (!linked) linkUpAt = 0;
+    else if (linkUpAt == 0) linkUpAt = polled ? now : now - kSettleMs;
+    polled = true;
+    bool settled = now - linkUpAt >= kSettleMs;
+
     s = Base(c.pid, c.pid == 0x0AB5 ? L"HyperX Pulsefire Haste 2 Core Wireless" : L"HyperX Pulsefire Haste 2 Wireless");
     s.kind = DeviceKind::Mouse;
     s.connected = linked;
-    if (gotBattery) {
+    if (gotBattery && settled) {  // an unsettled reading stays unknown, so the tray keeps the last value dimmed
         s.percent = r[2];
         s.charging = r[3] == 0x01 || r[3] == 0x02;
         s.millivolts = r[6] | (r[7] << 8);
