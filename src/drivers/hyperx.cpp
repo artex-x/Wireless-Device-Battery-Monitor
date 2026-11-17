@@ -126,11 +126,16 @@ bool HasteWireless(const HidColl& c, DeviceStatus& s) {
         return Query(d, { cmd, sub }, r, 1000, [cmd, sub](const std::vector<BYTE>& r) { return r.size() >= 8 && r[0] == cmd + 1 && r[1] == sub; });
     };
     std::vector<BYTE> r;
-    if (!q(0x52, 0x01, r)) return false;
+    // After a reconnect the dongle floods the channel with unrelated reports (44 xx, 45 xx, FB xx) and the
+    // link reply can miss the time limit, so a missing link reply is not an error: the battery query decides.
+    bool linkKnown = q(0x52, 0x01, r);
+    bool linked = !linkKnown || r[2] != 0;
+    bool gotBattery = linked && q(0x50, 0x02, r) && r[2] <= 100;
+    if (!linkKnown && !gotBattery) return false;
     s = Base(c.pid, c.pid == 0x0AB5 ? L"HyperX Pulsefire Haste 2 Core Wireless" : L"HyperX Pulsefire Haste 2 Wireless");
     s.kind = DeviceKind::Mouse;
-    s.connected = r[2] != 0;
-    if (s.connected && q(0x50, 0x02, r) && r[2] <= 100) {
+    s.connected = linked;
+    if (gotBattery) {
         s.percent = r[2];
         s.charging = r[3] == 0x01 || r[3] == 0x02;
         s.millivolts = r[6] | (r[7] << 8);
